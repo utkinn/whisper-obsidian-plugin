@@ -80,6 +80,8 @@ export class Transcriber {
 		audioFilePath: string
 	): Promise<void> {
 		try {
+			await this.createFolderForAudioFileIfMissing();
+
 			const arrayBuffer = await blob.arrayBuffer();
 			await this.plugin.app.vault.adapter.writeBinary(
 				audioFilePath,
@@ -89,6 +91,18 @@ export class Transcriber {
 		} catch (err) {
 			console.error("Error saving audio file:", err);
 			new Notice("Error saving audio file: " + err.message);
+		}
+	}
+
+	private async createFolderForAudioFileIfMissing() {
+		const folder = this.plugin.app.vault.getFolderByPath(
+			this.plugin.settings.saveAudioFilePath
+		);
+
+		if (!folder) {
+			await this.plugin.app.vault.createFolder(
+				this.plugin.settings.saveAudioFilePath
+			);
 		}
 	}
 

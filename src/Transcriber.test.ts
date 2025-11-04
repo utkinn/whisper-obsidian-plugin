@@ -27,6 +27,8 @@ function createMockWorkspace() {
 function createMockVault() {
 	return {
 		create: jest.fn(),
+		createFolder: jest.fn(),
+		getFolderByPath: jest.fn(),
 		adapter: {
 			writeBinary: jest.fn(),
 		},
@@ -209,4 +211,18 @@ test("notices about audio file saving error", async () => {
 	expect(mockNotice).toHaveBeenCalledWith(
 		"Error saving audio file: Permission denied"
 	);
+});
+
+test("creates a folder for the audio file if it does not exist", async () => {
+	plugin = createMockPlugin({
+		saveAudioFile: true,
+		saveAudioFilePath: "audio",
+	});
+	(plugin.app.vault.getFolderByPath as jest.Mock).mockReturnValue(null);
+
+	transcriber = new Transcriber(plugin);
+
+	await transcriber.transcribeAndSaveResults(audioBlob, audioFileName);
+
+	expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("audio");
 });
